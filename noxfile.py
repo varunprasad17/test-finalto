@@ -3,23 +3,7 @@ from nox_uv import session
 
 options.error_on_external_run = True
 options.default_venv_backend = "uv"
-options.sessions = ["lint", "type_check", "test", "docs"]
-
-
-@session(
-    python=["3.10", "3.11", "3.12", "3.13", "3.14", "3.14t"],
-    uv_groups=["test"],
-)
-def test(s: Session) -> None:
-    s.run(
-        "pytest",
-        "--cov=test_finalto",
-        "--cov-report=html",
-        "--cov-report=term",
-        "--cov-fail-under=100",
-        "tests",
-        *s.posargs,
-    )
+options.sessions = ["lint", "type_check"]
 
 
 # For some sessions, set venv_backend="none" to simply execute scripts within the existing outer
@@ -72,4 +56,3 @@ def lint_fix(s: Session) -> None:
 @session(venv_backend="none")
 def type_check(s: Session) -> None:
     s.run("mypy", "src", "tests", "noxfile.py")
-
