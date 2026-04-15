@@ -1,0 +1,47 @@
+services:
+
+  streamer:
+    build:
+      context: ./src/streamer
+    ports:
+      - "8001:8001"
+    environment:
+      TICK_RATE_HZ: 1         # ticks per second per instrument (raise to stress-test)
+      NUM_CLIENTS: 5
+      TRADE_PROBABILITY: 0.1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import websockets.sync.client; websockets.sync.client.connect('ws://localhost:8001').close()\" 2>/dev/null && echo ok"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: ./src/backend
+    ports:
+      - "8000:8000"
+    environment:
+      STREAMER_WS_URL: ws://streamer:8001
+      MAX_DASHBOARD_HZ: 10   # cap rebroadcast to dashboard regardless of TICK_RATE_HZ
+    depends_on:
+      streamer:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" 2>/dev/null && echo ok"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  dashboard:
+    build:
+      context: ./src/dashboard
+    ports:
+      - "8501:8501"
+    environment:
+      BACKEND_WS_URL: ws://backend:8000/ws/live
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
