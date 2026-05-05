@@ -52,30 +52,6 @@ TICK_RATE_HZ: float = float(os.getenv("TICK_RATE_HZ", "1"))  # ticks/second
 HOST: str = os.getenv("HOST", "0.0.0.0")
 PORT: int = int(os.getenv("PORT", "8001"))
 
-# Instrument initial prices and fixed half-spreads (in price units)
-INSTRUMENTS: dict[str, dict[str, Any]] = {
-    "BTC/USD": {
-        "mid": 68_000.0,
-        "half_spread": 5.0,
-        "volatility": 150.0,
-        "min_qty": 0.01,
-        "max_qty": 1.0,
-    },
-    "GOLD/USD": {
-        "mid": 2_300.0,
-        "half_spread": 0.50,
-        "volatility": 5.0,
-        "min_qty": 0.1,
-        "max_qty": 10.0,
-    },
-    "MSFT/USD": {
-        "mid": 420.0,
-        "half_spread": 0.05,
-        "volatility": 1.5,
-        "min_qty": 1,
-        "max_qty": 50,
-    },
-}
 
 NUM_CLIENTS: int = int(os.getenv("NUM_CLIENTS", "5"))
 # Probability that a given client trades on any given tick (per instrument)
@@ -117,7 +93,30 @@ class InstrumentState:
 
 
 def build_instruments() -> dict[str, InstrumentState]:
-    return {name: InstrumentState(name=name, **cfg) for name, cfg in INSTRUMENTS.items()}
+    instruments: dict[str, dict[str, Any]] = {
+        "BTC/USD": {
+            "mid": 68_000.0,
+            "half_spread": 5.0,
+            "volatility": 150.0,
+            "min_qty": 0.01,
+            "max_qty": 1.0,
+        },
+        "GOLD/USD": {
+            "mid": 2_300.0,
+            "half_spread": 0.50,
+            "volatility": 5.0,
+            "min_qty": 0.1,
+            "max_qty": 10.0,
+        },
+        "MSFT/USD": {
+            "mid": 420.0,
+            "half_spread": 0.05,
+            "volatility": 1.5,
+            "min_qty": 1,
+            "max_qty": 50,
+        },
+    }
+    return {name: InstrumentState(name=name, **cfg) for name, cfg in instruments.items()}
 
 
 CLIENT_IDS: list[str] = [f"client_{i}" for i in range(1, NUM_CLIENTS + 1)]
