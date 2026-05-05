@@ -35,8 +35,9 @@ import random
 import time
 from typing import Any
 
-import websockets
-from websockets.server import ServerConnection
+from websockets.asyncio.server import ServerConnection
+from websockets.asyncio.server import broadcast as ws_broadcast
+from websockets.asyncio.server import serve as ws_serve
 
 logging.basicConfig(
     level=logging.INFO,
@@ -145,8 +146,8 @@ async def broadcast(message: str) -> None:
     """Send a message to all connected subscribers."""
     if not _connected:
         return
-    # websockets.broadcast is fire-and-forget; errors are logged by the library
-    websockets.broadcast(_connected, message)
+    # fire-and-forget; errors are logged by the library
+    ws_broadcast(_connected, message)
 
 
 # ---------------------------------------------------------------------------
@@ -245,7 +246,7 @@ async def main() -> None:
     instruments = build_instruments()
 
     log.info("Starting WebSocket server on ws://%s:%d", HOST, PORT)
-    async with websockets.serve(handler, HOST, PORT):
+    async with ws_serve(handler, HOST, PORT):
         await tick_loop(instruments)
 
 
