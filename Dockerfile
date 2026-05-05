@@ -1,19 +1,21 @@
-# Root Dockerfile — not used directly by docker compose.
-# Each service has its own Dockerfile under src/<service>/Dockerfile.
-# This file exists as a reference / single-image build for CI or quick local runs.
-#
+# Root Dockerfile — not used by docker compose.
+# Reference / single-image build for CI or quick local runs.
 # Build:  docker build -t finalto-risk .
-# (Does not run any service on its own — use docker compose instead.)
-
+# syntax=docker/dockerfile:1.7
 FROM python:3.12-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PIP_NO_CACHE_DIR=1
+RUN pip install uv --no-cache-dir
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=never \
+    PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY pyproject.toml uv.lock ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-install-project \
+    --group streamer --group backend --group dashboard
 
 COPY src/ ./src/
