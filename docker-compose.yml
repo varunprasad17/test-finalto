@@ -2,7 +2,8 @@ services:
 
   streamer:
     build:
-      context: ./src/streamer
+      context: .
+      dockerfile: src/streamer/Dockerfile
     ports:
       - "8001:8001"
     environment:
@@ -11,14 +12,15 @@ services:
       TRADE_PROBABILITY: 0.1
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "python3 -c \"import websockets.sync.client; websockets.sync.client.connect('ws://localhost:8001').close()\" 2>/dev/null && echo ok"]
+      test: ["CMD-SHELL", "uv run python -c \"import websockets.sync.client; websockets.sync.client.connect('ws://localhost:8001').close()\" 2>/dev/null && echo ok"]
       interval: 5s
       timeout: 3s
       retries: 5
 
   backend:
     build:
-      context: ./src/backend
+      context: .
+      dockerfile: src/backend/Dockerfile
     ports:
       - "8000:8000"
     environment:
@@ -29,14 +31,15 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" 2>/dev/null && echo ok"]
+      test: ["CMD-SHELL", "uv run python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" 2>/dev/null && echo ok"]
       interval: 5s
       timeout: 3s
       retries: 5
 
   dashboard:
     build:
-      context: ./src/dashboard
+      context: .
+      dockerfile: src/dashboard/Dockerfile
     ports:
       - "8501:8501"
     environment:

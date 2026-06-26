@@ -3,9 +3,22 @@ name = "test-finalto"
 version = "1.0.0"
 description = "Risk Management Dashboard MVP for Finalto"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "websockets>=12.0",
+]
 
 [dependency-groups]
+streamer = []
+backend = [
+    "fastapi>=0.111.0",
+    "uvicorn[standard]>=0.29.0",
+]
+dashboard = [
+    "streamlit>=1.37.0",
+    "streamlit-echarts>=0.4.0",
+    "pandas>=2.0.0",
+    "httpx>=0.27.0",
+]
 nox = [
     "nox-uv",
 ]
@@ -35,8 +48,12 @@ licenses = [
 ]
 
 [tool.uv]
-default-groups = "all"
 package = false
+
+[tool.uv.workspace]
+members = [
+    "tmp/proj",
+]
 
 [tool.mypy]
 ignore_missing_imports = true
